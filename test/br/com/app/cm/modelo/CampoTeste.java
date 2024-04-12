@@ -1,10 +1,14 @@
 package br.com.app.cm.modelo;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import br.com.app.cm.excecao.ExplosaoException;
 
 public class CampoTeste {
 	
@@ -101,7 +105,88 @@ public class CampoTeste {
 	@Test
 	void testeAbrirMinadoNaoMarcado() {
 		campo.minar();
-		assertFalse(campo.abrir());
+		assertThrows(ExplosaoException.class, () -> {
+			campo.abrir();
+		});
 	}
 	
+	@Test
+	void testeAbrirComVizinhos1() {
+		
+		Campo campo11 = new Campo(1, 1);
+		
+		Campo campo22 = new Campo(2, 2);
+		campo22.adicionarVizinho(campo11);
+		
+		campo.adicionarVizinho(campo22);
+		campo.abrir();
+		
+		assertTrue(campo22.isAberto() && campo11.isAberto());
+	}
+	
+	@Test
+	void testeAbrirComVizinhos2() {
+		
+		Campo campo11 = new Campo(1, 1);
+		Campo campo12 = new Campo(1, 1);
+		campo12.minar();
+		
+		Campo campo22 = new Campo(2, 2);
+		campo22.adicionarVizinho(campo11);
+		campo22.adicionarVizinho(campo12);
+		
+		campo.adicionarVizinho(campo22);
+		campo.abrir();
+		
+		assertTrue(campo22.isAberto() && campo11.isFechado());
+	}
+	
+	
+	@Test
+	void testeReiniciarCampo() {
+	    campo.minar();
+	    campo.alternarMarcacao();
+	    campo.abrir();
+	    campo.reiniciar();
+
+	    assertFalse(campo.isAberto());
+	    assertFalse(campo.isMarcado());
+	    assertFalse(campo.minado);
+	}
+	
+	@Test
+	void testeToStringFechado() {
+	    assertEquals("?", campo.toString());
+	}
+	
+	@Test
+	void testeToStringMarcado() {
+	    campo.alternarMarcacao();
+	    assertEquals("x", campo.toString());
+	}
+	
+	@Test
+	void testeToStringAbertoSemMinasNaVizinhanca() {
+	    campo.abrir();
+	    assertEquals(" ", campo.toString());
+	}
+	
+	@Test
+	void testeObjetivoAlcancadoDesvendado() {
+	    campo.abrir();
+	    assertTrue(campo.objetivoAlcancado());
+	}
+	
+	@Test
+	void testeObjetivoAlcancadoProtegido() {
+	    campo.minar();
+	    campo.alternarMarcacao();
+	    assertTrue(campo.objetivoAlcancado());
+	}
+	
+	@Test
+	void testeObjetivoAlcancadoNaoAlcancado() {
+	    assertFalse(campo.objetivoAlcancado());
+	}
+
 }
